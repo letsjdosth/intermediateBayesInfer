@@ -214,7 +214,8 @@ laplace_approx_variance = np.linalg.inv(unif_gumbel2_log_posterior_neg_hessian(p
 print("laplace_approx_covariance: \n",laplace_approx_variance)
 
 laplace_approx_sample = rn_generator.multivariate_normal(posterior_mode, laplace_approx_variance, 10000)
-plt.scatter(laplace_approx_sample[:,0], laplace_approx_sample[:,1]) 
+plt.scatter(laplace_approx_sample[:,0], laplace_approx_sample[:,1], s=0.5) 
+
 plt.show()
 
 

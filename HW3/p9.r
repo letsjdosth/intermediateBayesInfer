@@ -1,4 +1,5 @@
-#7e
+rm(list=ls())
+#7e.f
 
 set.seed(20220216)
 n = 1000
@@ -22,7 +23,7 @@ posterior_theta_given_sigma2_params <- function(prior_theta0, given_sigma2, prio
 }
 
 
-#
+
 # combination 1
 #informative for theta / informative for sigma2
 #theta~N(5, 0.0001*sigma2) / sigma2~inv.gamma(10000, 10000)
@@ -40,7 +41,7 @@ simed_posterior_sigma2_case1 = c()
 for(i in 1:T){
     gamma_sample = rgamma(1, posterior_invgamma_params_case1[1], rate=posterior_invgamma_params_case1[2])
     sigma2_sample = 1/gamma_sample
-    posterior_normal_params_case1 = posterior_theta_given_sigma2_params(theta1, sigma2_sample, k1)
+    posterior_normal_params_case1 = posterior_theta_given_sigma2_params(theta_case1, sigma2_sample, k_case1)
     theta_sample = rnorm(1, posterior_normal_params_case1[1], posterior_normal_params_case1[2])
     simed_posterior_theta_case1 = c(simed_posterior_theta_case1, theta_sample)
     simed_posterior_sigma2_case1 = c(simed_posterior_sigma2_case1, sigma2_sample)
@@ -73,7 +74,7 @@ simed_posterior_sigma2_case2 = c()
 for(i in 1:T){
     gamma_sample = rgamma(1, posterior_invgamma_params_case2[1], rate=posterior_invgamma_params_case2[2])
     sigma2_sample = 1/gamma_sample
-    posterior_normal_params_case2 = posterior_theta_given_sigma2_params(theta1, sigma2_sample, k1)
+    posterior_normal_params_case2 = posterior_theta_given_sigma2_params(theta_case2, sigma2_sample, k_case2)
     theta_sample = rnorm(1, posterior_normal_params_case2[1], posterior_normal_params_case2[2])
     simed_posterior_theta_case2 = c(simed_posterior_theta_case2, theta_sample)
     simed_posterior_sigma2_case2 = c(simed_posterior_sigma2_case2, sigma2_sample)
@@ -97,7 +98,7 @@ quantile(simed_etas_case2, probs = c(0.025, 0.975))
 #theta~N(5, 1000*sigma2) / sigma2~inv.gamma(0.0001, 0.0001)
 
 a_case3=0.001; b_case3=0.001
-k_case3=10000000000000000000; theta_case3=5
+k_case3=10^5; theta_case3=5
 posterior_invgamma_params_case3 = posterior_sigma2_invgamma_params(
     a_case3, b_case3, theta_case3, k_case3)
 print(posterior_invgamma_params_case3)
@@ -108,7 +109,7 @@ simed_posterior_sigma2_case3 = c()
 for(i in 1:T){
     gamma_sample = rgamma(1, posterior_invgamma_params_case3[1], rate=posterior_invgamma_params_case3[2])
     sigma2_sample = 1/gamma_sample
-    posterior_normal_params_case3 = posterior_theta_given_sigma2_params(theta1, sigma2_sample, k1)
+    posterior_normal_params_case3 = posterior_theta_given_sigma2_params(theta_case3, sigma2_sample, k_case3)
     theta_sample = rnorm(1, posterior_normal_params_case3[1], posterior_normal_params_case3[2])
     simed_posterior_theta_case3 = c(simed_posterior_theta_case3, theta_sample)
     simed_posterior_sigma2_case3 = c(simed_posterior_sigma2_case3, sigma2_sample)
