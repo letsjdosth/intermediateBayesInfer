@@ -44,8 +44,11 @@ for param in grid_2d:
     log_q_val_vec.append(unif_gumbel2_log_posterior(param, gumbel2_smpl_55))
 log_q_val_vec = np.array(log_q_val_vec).reshape((40,40)).transpose()
 
-plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_val_vec, levels=100) 
-# plt.show()
+plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_val_vec, levels=100)
+plt.title("grid evaluation")
+plt.xlabel("alpha")
+plt.ylabel("beta")
+plt.show()
 
 
 #Laplace approximation
@@ -210,11 +213,28 @@ newton_inst1.run_newton_with_backtracking_line_search(np.array([5, 5]), method="
 #laplace approximation
 posterior_mode = newton_inst1.get_arg_min()
 print("posterior_mode: ", posterior_mode)
-laplace_approx_variance = np.linalg.inv(unif_gumbel2_log_posterior_neg_hessian(posterior_mode, gumbel2_smpl_55))
+log_posterior_negative_hessian = unif_gumbel2_log_posterior_neg_hessian(posterior_mode, gumbel2_smpl_55)
+laplace_approx_variance = np.linalg.inv(log_posterior_negative_hessian)
 print("laplace_approx_covariance: \n",laplace_approx_variance)
 
+def multivariate_normal_log_density(eval_pt, mu, sigma_inverse):
+    return -0.5*(eval_pt-mu).transpose() @ sigma_inverse @ (eval_pt-mu)
+
+
+log_q_val_vec = []
+for param in grid_2d:
+    log_q_val_vec.append(multivariate_normal_log_density(param, posterior_mode, log_posterior_negative_hessian))
+log_q_val_vec = np.array(log_q_val_vec).reshape((40,40)).transpose()
+plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_val_vec, levels=100) 
+plt.title("Laplace Approximation")
+plt.xlabel("alpha")
+plt.ylabel("beta")
+plt.axvline(x=posterior_mode[0], color="red")
+plt.axhline(y=posterior_mode[1], color="red")
+
 laplace_approx_sample = rn_generator.multivariate_normal(posterior_mode, laplace_approx_variance, 10000)
-plt.scatter(laplace_approx_sample[:,0], laplace_approx_sample[:,1], s=0.5) 
+plt.scatter(laplace_approx_sample[:,0], laplace_approx_sample[:,1], s=0.5)
+
 
 plt.show()
 
