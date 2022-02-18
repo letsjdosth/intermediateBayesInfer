@@ -1,5 +1,31 @@
+---
+title: "Stat206b hw3 problem8"
+author: "Seokjun Choi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+For this problem, I used python.
+
+Note: Unfortunately, by technical issues, R-markdown does not support the matplotlib,
+a python library for visualization.
+So, in this markdown file, I use R functions to draw figures.
+(As a result, this file are mixed with python code and R code.
+For pure-python(!) file, visit https://github.com/letsjdosth/intermediateBayesInfer
+and see the directory 'HW3'.)
+
+```{r}
+library(reticulate) # this library connects R and python
+```
+
+
+# Generate Gumbel type-2 samples using the inverse CDF method
+
+```{python}
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import scipy.linalg
 
 rn_generator = np.random.default_rng(seed=20220216)
@@ -12,14 +38,33 @@ def gumbel2_random_number_generator(num_smpl, param_alpha, param_beta):
     gumbel2_smpl = np.array([gumbel2_inverse_cdf(y, param_alpha, param_beta) for y in unif_smpl])
     return gumbel2_smpl
 
+
 # generate sample
 gumbel2_smpl_55 = gumbel2_random_number_generator(500, 5, 5)
 
 # print(gumbel2_smpl_55)
 # plt.hist(gumbel2_smpl_55, 15)
 # plt.show()
+```
+```{r}
+hist(py$gumbel2_smpl_55, breaks=50, freq=FALSE, main="gumbel2_smpl_55")
+```
 
-# posterior
+
+# posterior evaluation on grid
+
+I will make a figure for the log-posterior.
+We can easily get the posterior with original scale.
+But since logarithm is 1-1 and monotone increasing, information conveyed by a figure is basically same.
+To avoid underflow and overflow, I will skip to make a figure with original scale.
+
+Note that, I also skip finding the normalizing constant.
+We can find the approximated constant by just adding all values at the proper grid range
+that density are meanngfully greater than 0.
+In my opinion, however, the constant is useless unless we want to see the true probability
+(strictly speaking, actually, it is just 'approximated', not true.)
+
+```{python}
 def unif_gumbel2_log_posterior(prior_param_vec, data):
     #log q (in the note)
     prior_alpha, prior_beta = prior_param_vec
@@ -44,15 +89,24 @@ for param in grid_2d:
     log_q_val_vec.append(unif_gumbel2_log_posterior(param, gumbel2_smpl_55))
 log_q_val_vec = np.array(log_q_val_vec).reshape((40,40)).transpose()
 
-plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_val_vec, levels=100)
-plt.title("grid evaluation")
-plt.xlabel("alpha")
-plt.ylabel("beta")
-plt.show()
+# plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_val_vec, levels=100)
+# plt.title("grid evaluation")
+# plt.xlabel("alpha")
+# plt.ylabel("beta")
+# plt.show()
+```
+```{r}
+contour(seq(3,6.9,by=0.1), seq(3,6.9,by=0.1), t(py$log_q_val_vec), nlevels=100,
+xlab="alpha", ylab="beta", main="grid evaluation")
+```
 
 
-#Laplace approximation
+# Laplace approximation
 
+This class is newton method implementation.
+(This is not essential part of our work, so skip it.)
+
+```{python}
 class NewtonUnconstrained:
     def __init__(self, fn_objective, fn_objective_gradient, fn_objective_hessian, fn_objective_domain_indicator = None):
         
@@ -164,7 +218,12 @@ class NewtonUnconstrained:
 
     def get_min(self):
         return self.objective(self.minimizing_sequence[-1])
+```
 
+To use newton method, set functions about log posterior, its gradient, and its hessian.
+Since above class is designed for minimization problem, I make them have negative-value output.
+
+```{python}
 def unif_gumbel2_log_posterior_neg(prior_param_vec, data):
     return unif_gumbel2_log_posterior(prior_param_vec, data)*(-1)
 
@@ -199,7 +258,13 @@ import functools
 newton_objective = functools.partial(unif_gumbel2_log_posterior_neg, data=gumbel2_smpl_55)
 newton_gradient = functools.partial(unif_gumbel2_log_posterior_neg_gradient, data=gumbel2_smpl_55)
 newton_hessian = functools.partial(unif_gumbel2_log_posterior_neg_hessian, data=gumbel2_smpl_55)
+```
 
+After finding the mode (this is convex problem!), I will evaluate negative hessian at the mode.
+By inverting the negative hessian, we can get the covariance matrix 
+for the multivariate normal distribution from the Laplace approximation.
+
+```{python}
 newton_inst1 = NewtonUnconstrained(
     newton_objective, 
     newton_gradient, 
@@ -216,7 +281,16 @@ print("posterior_mode: ", posterior_mode)
 log_posterior_negative_hessian = unif_gumbel2_log_posterior_neg_hessian(posterior_mode, gumbel2_smpl_55)
 laplace_approx_variance = np.linalg.inv(log_posterior_negative_hessian)
 print("laplace_approx_covariance: \n",laplace_approx_variance)
+```
 
+Since started at (5,5), newton method converges by only one step.
+(I have checked that the convergence are so fast even if I started far from (5,5).)
+
+Let's draw a contour plot, 
+and draw scatterplot of simulated samples from the approximated multivariate normal distribution over the contour plot,
+to check the results.
+
+```{python}
 def multivariate_normal_log_density(eval_pt, mu, sigma_inverse):
     return -0.5*(eval_pt-mu).transpose() @ sigma_inverse @ (eval_pt-mu)
 
@@ -225,17 +299,40 @@ log_q_laplace_approxed_val_vec = []
 for param in grid_2d:
     log_q_laplace_approxed_val_vec.append(multivariate_normal_log_density(param, posterior_mode, log_posterior_negative_hessian))
 log_q_laplace_approxed_val_vec = np.array(log_q_laplace_approxed_val_vec).reshape((40,40)).transpose()
-plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_laplace_approxed_val_vec, levels=100) 
-plt.title("Laplace Approximation")
-plt.xlabel("alpha")
-plt.ylabel("beta")
-plt.axvline(x=posterior_mode[0], color="red")
-plt.axhline(y=posterior_mode[1], color="red")
+
+# plt.contour(grid_1d_mesh_X, grid_1d_mesh_Y,log_q_laplace_approxed_val_vec, levels=100) 
+# plt.title("Laplace Approximation")
+# plt.xlabel("alpha")
+# plt.ylabel("beta")
+# plt.axvline(x=posterior_mode[0], color="red")
+# plt.axhline(y=posterior_mode[1], color="red")
 
 laplace_approx_sample = rn_generator.multivariate_normal(posterior_mode, laplace_approx_variance, 10000)
-plt.scatter(laplace_approx_sample[:,0], laplace_approx_sample[:,1], s=0.5)
+# plt.scatter(laplace_approx_sample[:,0], laplace_approx_sample[:,1], s=0.5)
+# plt.show()
+```
+```{r}
+plot(py$laplace_approx_sample, xlim=c(3,7), ylim=c(3,7),
+xlab="alpha", ylab="beta", main="Laplace approximation", pch=19, cex=0.5, col="blue")
+contour(seq(3,6.9,by=0.1), seq(3,6.9,by=0.1), t(py$log_q_laplace_approxed_val_vec), nlevels=100, add=TRUE)
+abline(v=py$posterior_mode[1], h=py$posterior_mode[2], col="red")
+```
 
 
-plt.show()
+To compare, let me repeat the two plots in the above.
 
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
 
+contour(seq(3,6.9,by=0.1), seq(3,6.9,by=0.1), t(py$log_q_val_vec), nlevels=100,
+xlab="alpha", ylab="beta", main="grid evaluation")
+
+plot(py$laplace_approx_sample, xlim=c(3,7), ylim=c(3,7),
+xlab="alpha", ylab="beta", main="Laplace approximation", pch=19, cex=0.5, col="blue")
+contour(seq(3,6.9,by=0.1), seq(3,6.9,by=0.1), t(py$log_q_laplace_approxed_val_vec), nlevels=100, add=TRUE)
+abline(v=py$posterior_mode[1], h=py$posterior_mode[2], col="red")
+```
+
+Since our posterior looks good to approximate by multivariate normal distribution,
+(one mode, quite symmetric with respect to the mode, etc)
+Laplace approximation has worked well.

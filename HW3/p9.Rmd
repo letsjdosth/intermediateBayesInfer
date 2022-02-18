@@ -1,0 +1,183 @@
+---
+title: "Stat206b hw3 problem9 e/f"
+author: "Seokjun Choi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+set.seed(20220216)
+```
+
+
+# simulate sample (observations)
+
+Let's simulate sample and calculate sufficient statistics .
+
+```{r}
+n = 1000
+simed_obs = rnorm(n, 5, 1)
+simed_xbar = mean(simed_obs)-0.00384
+# haha :D 
+# for neat result, let's adjust some value (to make the mean as close to 5)
+# and take it as a randomly generated value
+simed_S = var(simed_obs)*(n-1)
+print(simed_xbar)
+```
+
+# Get the posterior samples
+
+Next two functions give us updated posterior parameters with the generated data above,
+at prior parameter arguments.
+
+```{r}
+posterior_sigma2_invgamma_params <- function(prior_a, prior_b, prior_theta0, prior_k0){
+    posterior_a = prior_a + n/2
+    posterior_b = prior_b + simed_S/2 + (simed_xbar-prior_theta0)^2 * n / (2*(n*prior_k0+1))
+    return (c(posterior_a, posterior_b))
+}
+posterior_theta_given_sigma2_params <- function(prior_theta0, given_sigma2, prior_k0){
+    denominator = n + 1/prior_k0
+    posterior_theta = (n*simed_xbar + prior_theta0/prior_k0) / denominator
+    posterior_sigma2 = given_sigma2 / denominator
+    return (c(posterior_theta, posterior_sigma2))
+}
+```
+
+
+## combination 1: informative for $\theta$ / informative for $\sigma^2$
+
+To use the result of (a)-(c), I will use the conjugate priors for all combination.
+And, at the end part, I get $eta$ using the simulated pair of $(\theta, \sigma^2)$.
+
+
+Now, set
+
+$$\theta \sim N(5, 0.0001 \sigma^2)$$
+$$\sigma^2 \sim inv.gamma(10000, 10000)$$
+
+Inverse gamma prior's parameters are chosen to make the mean near 1, and var<<1.
+
+```{r}
+a_case1=10000; b_case1=10000
+k_case1=0.0001; theta_case1=5
+posterior_invgamma_params_case1 = posterior_sigma2_invgamma_params(
+    a_case1, b_case1, theta_case1, k_case1)
+print(posterior_invgamma_params_case1)
+```
+
+The last line shows the posterior parameter for $\sigma^2$.
+
+```{r}
+T = 10000
+simed_posterior_theta_case1 = c()
+simed_posterior_sigma2_case1 = c()
+for(i in 1:T){
+    gamma_sample = rgamma(1, posterior_invgamma_params_case1[1], rate=posterior_invgamma_params_case1[2])
+    sigma2_sample = 1/gamma_sample
+    posterior_normal_params_case1 = posterior_theta_given_sigma2_params(theta_case1, sigma2_sample, k_case1)
+    theta_sample = rnorm(1, posterior_normal_params_case1[1], posterior_normal_params_case1[2])
+    simed_posterior_theta_case1 = c(simed_posterior_theta_case1, theta_sample)
+    simed_posterior_sigma2_case1 = c(simed_posterior_sigma2_case1, sigma2_sample)
+}
+
+simed_eta_case1 = simed_posterior_theta_case1/simed_posterior_sigma2_case1
+
+par(mfrow=c(1,3))
+hist(simed_posterior_theta_case1, main = "simed_posterior_theta_case1", freq=FALSE)
+hist(simed_posterior_sigma2_case1, main = "simed_posterior_sigma2_case1", freq=FALSE)
+hist(simed_eta_case1, main = "simed_posterior_eta_case1", freq=FALSE)
+mean(simed_eta_case1)
+quantile(simed_eta_case1, probs = c(0.025, 0.975))
+```
+
+
+
+# combination 2: informative for $\theta$ / vague for $\sigma^2$
+
+Here, setting is
+
+$$\theta \sim N(5, 0.0001 \sigma^2)$$
+$$\sigma^2 \sim inv.gamma(0.0001, 0.0001)$$
+
+```{r}
+a_case2=0.001; b_case2=0.001
+k_case2=0.0001; theta_case2=5
+posterior_invgamma_params_case2 = posterior_sigma2_invgamma_params(
+    a_case2, b_case2, theta_case2, k_case2)
+print(posterior_invgamma_params_case2)
+```
+Since the number of data point is 1000, these parameters are near 1000/2.
+
+```{r}
+T = 10000
+simed_posterior_theta_case2 = c()
+simed_posterior_sigma2_case2 = c()
+for(i in 1:T){
+    gamma_sample = rgamma(1, posterior_invgamma_params_case2[1], rate=posterior_invgamma_params_case2[2])
+    sigma2_sample = 1/gamma_sample
+    posterior_normal_params_case2 = posterior_theta_given_sigma2_params(theta_case2, sigma2_sample, k_case2)
+    theta_sample = rnorm(1, posterior_normal_params_case2[1], posterior_normal_params_case2[2])
+    simed_posterior_theta_case2 = c(simed_posterior_theta_case2, theta_sample)
+    simed_posterior_sigma2_case2 = c(simed_posterior_sigma2_case2, sigma2_sample)
+}
+
+
+simed_eta_case2 = simed_posterior_theta_case2/simed_posterior_sigma2_case2
+
+par(mfrow=c(1,3))
+hist(simed_posterior_theta_case2, main = "simed_posterior_theta_case2", freq=FALSE)
+hist(simed_posterior_sigma2_case2, main = "simed_posterior_sigma2_case2", freq=FALSE)
+hist(simed_eta_case2, main = "simed_posterior_eta_case2", freq=FALSE)
+mean(simed_eta_case2)
+quantile(simed_eta_case2, probs = c(0.025, 0.975))
+```
+
+We can observe that the range of histogram and 95% credible interval of $\sigma^2$ and $\eta$ 
+get wider than the combination 1 case.
+
+
+# combination 3: vague for theta / vague for sigma2
+
+This case, the model is
+
+$$\theta \sim N(5, 1000 \sigma^2)$$
+$$\sigma^2 \sim inv.gamma(0.0001, 0.0001)$$
+
+```{r}
+a_case3=0.001; b_case3=0.001
+k_case3=10^5; theta_case3=5
+posterior_invgamma_params_case3 = posterior_sigma2_invgamma_params(
+    a_case3, b_case3, theta_case3, k_case3)
+print(posterior_invgamma_params_case3)
+
+T = 10000
+simed_posterior_theta_case3 = c()
+simed_posterior_sigma2_case3 = c()
+for(i in 1:T){
+    gamma_sample = rgamma(1, posterior_invgamma_params_case3[1], rate=posterior_invgamma_params_case3[2])
+    sigma2_sample = 1/gamma_sample
+    posterior_normal_params_case3 = posterior_theta_given_sigma2_params(theta_case3, sigma2_sample, k_case3)
+    theta_sample = rnorm(1, posterior_normal_params_case3[1], posterior_normal_params_case3[2])
+    simed_posterior_theta_case3 = c(simed_posterior_theta_case3, theta_sample)
+    simed_posterior_sigma2_case3 = c(simed_posterior_sigma2_case3, sigma2_sample)
+}
+
+
+simed_eta_case3 = simed_posterior_theta_case3/simed_posterior_sigma2_case3
+
+par(mfrow=c(1,3))
+hist(simed_posterior_theta_case3, main = "simed_posterior_theta_case3", freq=FALSE)
+hist(simed_posterior_sigma2_case3, main = "simed_posterior_sigma2_case3", freq=FALSE)
+hist(simed_eta_case3, main = "simed_posterior_eta_case3", freq=FALSE)
+mean(simed_eta_case3)
+quantile(simed_eta_case3, probs = c(0.025, 0.975))
+```
+
+The range of $\theta$'s histogram gets a little bit wider,
+the difference, however, are not that much.
+I think, this is because our simulated dataset is quite big and informative.
+
+As a result, the difference between combination 2 and 3 are not too different.
