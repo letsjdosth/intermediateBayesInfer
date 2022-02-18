@@ -79,8 +79,8 @@ for(i in 1:3){
         rnorm(chosen_mixture_count_n1.5[i], params[1], params[2]))
 }
 hist(posterior_sample_vec_n1.5, breaks=100, freq=FALSE)
-mean(postpredictive_sample_vec_n1.5)
-var(postpredictive_sample_vec_n1.5)
+mean(posterior_sample_vec_n1.5)
+var(posterior_sample_vec_n1.5)
 
 
 #draw posterior predictive samples
