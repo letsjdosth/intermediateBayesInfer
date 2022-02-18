@@ -26,6 +26,8 @@ hist(simed_obs_n1.5)
 
 # drawing posterior samples
 
+## step 1: get posterior (updated) mixture weight and parameters
+
 Cause we know the analytic form up to normalizing constant, 
 (note that this is conjugate mixture model!)
 I will draw samples using the posterior kernel and weights.
@@ -66,8 +68,7 @@ The last two lines have been showing each weight of each mixture member.
 (n4 is for mean 4 model, and n1.5 is for mean 1.5 model.)
 Note that, the member that is closest to true mean of data gets more weight for each case.
 
-# draw posterior samples
-## select mixture with posterior weights
+## step 2: select mixture with posterior weights
 
 I will draw posterior samples by
 - choosing mixture
@@ -93,8 +94,7 @@ chosen_mixture_count_n1.5 = c(
 print(chosen_mixture_count_n1.5)
 ```
 
-
-## draw posterior samples
+## step 3: get posterior samples using selected mixture lists
 
 Using the choosing results, let's draw posterior samples (10000 samples for each case).
 
