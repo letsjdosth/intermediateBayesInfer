@@ -96,6 +96,7 @@ gibbs_diag_inst.burnin(3000)
 gibbs_diag_inst.show_traceplot((1,2))
 gibbs_diag_inst.show_hist((1,2))
 gibbs_diag_inst.show_scatterplot(0,1)
+gibbs_diag_inst.show_acf(30, (1,2))
 
 
 # MH
@@ -135,6 +136,7 @@ mh_diag_inst2.burnin(3000)
 mh_diag_inst2.show_traceplot((1,2))
 mh_diag_inst2.show_hist((1,2))
 mh_diag_inst2.show_scatterplot(0,1)
+mh_diag_inst2.show_acf(30, (1,2))
 
 
 #MH - laplace approximation proposal
@@ -204,7 +206,14 @@ mh_laplace_diag_inst2.burnin(3000)
 mh_laplace_diag_inst2.show_traceplot((1,2))
 mh_laplace_diag_inst2.show_hist((1,2))
 mh_laplace_diag_inst2.show_scatterplot(0,1)
+mh_laplace_diag_inst2.show_acf(30, (1,2))
 
-print("gibbs:", gibbs_diag_inst.get_sample_quantile([0.025, 0.5, 0.975]))
-print("MH:", mh_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
-print("MH_laplace:", mh_laplace_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
+
+print("gibbs:   mean:", gibbs_diag_inst.get_sample_mean())
+print("gibbs: 0.95CI:", gibbs_diag_inst.get_sample_quantile([0.025, 0.5, 0.975]))
+
+print("MH:   mean:", mh_diag_inst2.get_sample_mean())
+print("MH: 0.95CI:", mh_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
+
+print("MH_laplace:   mean:", mh_laplace_diag_inst2.get_sample_mean())
+print("MH_laplace: 0.95CI:", mh_laplace_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
