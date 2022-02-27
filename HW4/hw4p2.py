@@ -1,7 +1,6 @@
 from random import gammavariate, normalvariate, uniform, seed
 from math import lgamma, log, exp
 from functools import partial
-import time, csv
 
 import numpy as np
 from scipy.special import polygamma
@@ -23,12 +22,11 @@ data_sum = sum(mydata)
 seed(20220226)
 
 
-class Gibbs_with_MH:
-    def __init__(self, data, initial):
+class Gibbs_with_MH(MCMC_Gibbs):
+    def __init__(self, data, initial): #override
         self.data = data
         self.n = len(data)
         self.MC_sample = [initial]
-
 
     def get_data_sum(self):
         if not hasattr(self, 'data_sum'):
@@ -41,6 +39,7 @@ class Gibbs_with_MH:
             self.data_log_sum = sum([log(x) for x in self.data])
         return self.data_log_sum
 
+    # full-conditionals implementation
 
     def full_conditional_sampler_theta(self, last_param):
         nu = last_param[0]
@@ -76,42 +75,15 @@ class Gibbs_with_MH:
         new_log_nu = mcmc_mh_inst.MC_sample[-1]
         return [exp(new_log_nu[0]), theta]
 
-    def gibbs_sampler(self):
+    # main-sampler
+    
+    def gibbs_sampler(self): #override
         last = self.MC_sample[-1]
         new = [x for x in last] #[nu, theta]
         new = self.full_conditional_sampler_log_nu(new)
         new = self.full_conditional_sampler_theta(new)
         self.MC_sample.append(new)
 
-        
-    def generate_samples(self, num_samples, pid=None, verbose=True):
-        start_time = time.time()
-        for i in range(1, num_samples):
-            self.gibbs_sampler()
-            
-            if i==100 and verbose:
-                elap_time_head_iter = time.time()-start_time
-                estimated_time = (num_samples/100)*elap_time_head_iter
-                print("estimated running time: ", estimated_time//60, "min ", estimated_time%60, "sec")
-
-            if i%500 == 0 and verbose and pid is not None:
-                print("pid:",pid," iteration", i, "/", num_samples)
-            elif i%500 == 0 and verbose and pid is None:
-                print("iteration", i, "/", num_samples)
-        elap_time = time.time()-start_time
-        
-        if pid is not None and verbose:
-            print("pid:",pid, "iteration", num_samples, "/", num_samples, " done! (elapsed time for execution: ", elap_time//60,"min ", elap_time%60,"sec)")
-        elif pid is None and verbose:
-            print("iteration", num_samples, "/", num_samples, " done! (elapsed time for execution: ", elap_time//60,"min ", elap_time%60,"sec)")
-
-        
-    def write_samples(self, filename: str):
-        with open(filename + '.csv', 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            for sample in self.MC_sample:
-                csv_row = sample
-                writer.writerow(csv_row)
 
 #Gibbs
 
@@ -123,8 +95,7 @@ gibbs_diag_inst.set_mc_sample_from_MCMC_MH(gibbs_inst)
 gibbs_diag_inst.burnin(3000)
 gibbs_diag_inst.show_traceplot((1,2))
 gibbs_diag_inst.show_hist((1,2))
-
-
+gibbs_diag_inst.show_scatterplot(0,1)
 
 
 # MH
@@ -137,7 +108,6 @@ def joint_log_density_kernel(eval_pt, data_num, data_log_sum, data_sum):
     log_kernel -= exp(t)*data_sum
     log_kernel += (2*w - exp(w) + t - 2*exp(t) + w + t)
     return log_kernel
-
 
 def gaussian_sampler_2d(last, sd):
     sample0 = normalvariate(last[0], sd)
@@ -152,11 +122,11 @@ gaussian_sampler_2d_with_sd = partial(gaussian_sampler_2d, sd=0.1)
 mh_inst = MCMC_MH(joint_log_density_kernel_with_data, symmetric_log_density_kernel, gaussian_sampler_2d_with_sd, [1,1], 20220226)
 mh_inst.generate_samples(30000)
 
-mh_diag_inst = MCMC_Diag()
-mh_diag_inst.set_mc_sample_from_MCMC_MH(mh_inst)
+# mh_diag_inst = MCMC_Diag()
+# mh_diag_inst.set_mc_sample_from_MCMC_MH(mh_inst)
 # mh_diag_inst.show_traceplot((1,2))
 # mh_diag_inst.show_hist((1,2))
-mh_diag_inst.show_scatterplot(0,1)
+# mh_diag_inst.show_scatterplot(0,1)
 
 mh_diag_inst2 = MCMC_Diag()
 nu_theta_samples = [[exp(sample[0]), exp(sample[1])] for sample in mh_inst.MC_sample]
@@ -164,6 +134,7 @@ mh_diag_inst2.set_mc_samples_from_list(nu_theta_samples)
 mh_diag_inst2.burnin(3000)
 mh_diag_inst2.show_traceplot((1,2))
 mh_diag_inst2.show_hist((1,2))
+mh_diag_inst2.show_scatterplot(0,1)
 
 
 #MH - laplace approximation proposal
@@ -217,17 +188,14 @@ def log_multivariate_normal_density(from_smpl, to_smpl, mean, inv_cov):
     return kernel
 
 laplace_approxed_log_density = partial(log_multivariate_normal_density, mean=mode, inv_cov = newton_hessian(mode))
-
 mh_laplace_inst = MCMC_MH(joint_log_density_kernel_with_data, laplace_approxed_log_density, laplace_approxed_sampler, mode, 20220227+10)
-mh_laplace_inst.generate_samples(10000)
+mh_laplace_inst.generate_samples(30000)
 
-mh_laplace_diag_inst = MCMC_Diag()
-mh_laplace_diag_inst.set_mc_sample_from_MCMC_MH(mh_laplace_inst)
-mh_laplace_diag_inst.burnin(3000)
-mh_laplace_diag_inst.show_traceplot((1,2))
-mh_laplace_diag_inst.show_hist((1,2))
-mh_laplace_diag_inst.show_scatterplot(0,1)
-
+# mh_laplace_diag_inst = MCMC_Diag()
+# mh_laplace_diag_inst.set_mc_sample_from_MCMC_MH(mh_laplace_inst)
+# mh_laplace_diag_inst.burnin(3000)
+# mh_laplace_diag_inst.show_traceplot((1,2))
+# mh_laplace_diag_inst.show_hist((1,2))
 
 mh_laplace_diag_inst2 = MCMC_Diag()
 laplace_nu_theta_samples = [[exp(sample[0]), exp(sample[1])] for sample in mh_laplace_inst.MC_sample]
@@ -235,6 +203,7 @@ mh_laplace_diag_inst2.set_mc_samples_from_list(laplace_nu_theta_samples)
 mh_laplace_diag_inst2.burnin(3000)
 mh_laplace_diag_inst2.show_traceplot((1,2))
 mh_laplace_diag_inst2.show_hist((1,2))
+mh_laplace_diag_inst2.show_scatterplot(0,1)
 
 print("gibbs:", gibbs_diag_inst.get_sample_quantile([0.025, 0.5, 0.975]))
 print("MH:", mh_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
