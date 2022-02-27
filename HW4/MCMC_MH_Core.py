@@ -46,7 +46,7 @@ class MCMC_MH:
 
     def generate_samples(self, num_samples, pid=None, verbose=True):
         start_time = time.time()
-        for i in range(1, num_samples):
+        for i in range(num_samples):
             self.sampler()
             
             if i==100 and verbose:
@@ -201,3 +201,5 @@ class MCMC_Diag:
         if show:
             plt.show()
 
+if __name__ == "__main__":
+    pass
