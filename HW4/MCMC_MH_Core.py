@@ -200,6 +200,12 @@ class MCMC_Diag:
         plt.scatter(x, y)
         if show:
             plt.show()
+    
+    def effective_sample_size(self, dim_idx, sum_lags=30):
+        n = len(self.MC_sample)
+        auto_corr = self.get_autocorr(dim_idx, sum_lags)
+        ess = n / (1 + 2*sum(auto_corr))
+        return ess
 
 if __name__ == "__main__":
     pass

@@ -71,7 +71,7 @@ class Gibbs_with_MH(MCMC_Gibbs):
         log_log_nu_density_kernel_for_log_nu = partial(log_log_nu_density_kernel, theta=theta, data_log_sum=self.get_data_log_sum(), data_num=self.n)
         gaussian_sampler_sd1 = partial(gaussian_sampler, sd=0.1)
         mcmc_mh_inst = MCMC_MH(log_log_nu_density_kernel_for_log_nu, symmetric_log_density_kernel, gaussian_sampler_sd1, [log_nu], random_seed=uniform(0,1))
-        mcmc_mh_inst.generate_samples(2, verbose=False)
+        mcmc_mh_inst.generate_samples(1, verbose=False)
         new_log_nu = mcmc_mh_inst.MC_sample[-1]
         return [exp(new_log_nu[0]), theta]
 
@@ -211,9 +211,15 @@ mh_laplace_diag_inst2.show_acf(30, (1,2))
 
 print("gibbs:   mean:", gibbs_diag_inst.get_sample_mean())
 print("gibbs: 0.95CI:", gibbs_diag_inst.get_sample_quantile([0.025, 0.5, 0.975]))
+print("gibbs: 0d ess:", gibbs_diag_inst.effective_sample_size(0))
+print("gibbs: 1d ess:", gibbs_diag_inst.effective_sample_size(1))
 
 print("MH:   mean:", mh_diag_inst2.get_sample_mean())
 print("MH: 0.95CI:", mh_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
+print("MH: 0d ess:", mh_diag_inst2.effective_sample_size(0))
+print("MH: 1d ess:", mh_diag_inst2.effective_sample_size(1))
 
 print("MH_laplace:   mean:", mh_laplace_diag_inst2.get_sample_mean())
 print("MH_laplace: 0.95CI:", mh_laplace_diag_inst2.get_sample_quantile([0.025, 0.5, 0.975]))
+print("MH_laplace: 0d ess:", mh_laplace_diag_inst2.effective_sample_size(0))
+print("MH_laplace: 1d ess:", mh_laplace_diag_inst2.effective_sample_size(1))
