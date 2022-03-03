@@ -130,7 +130,6 @@ class MCMC_Diag:
             var_vec.append(variance(ith_dim_samples))
         return var_vec
 
-
     def get_sample_quantile(self, quantile_list):
         quantile_vec = []
         for i in range(self.num_dim):
@@ -139,15 +138,29 @@ class MCMC_Diag:
             quantile_vec.append(quantiles)
         return quantile_vec
 
+    def show_traceplot_specific_dim(self, dim_idx, show=False):
+        traceplot_data = self.get_specific_dim_samples(dim_idx)
+        plt.ylabel(str(dim_idx)+"th dim")
+        plt.plot(range(len(traceplot_data)), traceplot_data)
+        if show:
+            plt.show()
+
     def show_traceplot(self, figure_grid_dim, show=True):
         grid_column= figure_grid_dim[0]
         grid_row = figure_grid_dim[1]
 
         plt.figure(figsize=(5*grid_column, 3*grid_row))
         for i in range(self.num_dim):
-            seq = self.get_specific_dim_samples(i)
             plt.subplot(grid_row, grid_column, i+1)
-            plt.plot(range(len(seq)), seq)
+            self.show_traceplot_specific_dim(i)
+        if show:
+            plt.show()
+
+    
+    def show_hist_specific_dim(self, dim_idx, show=False):
+        hist_data = self.get_specific_dim_samples(dim_idx)
+        plt.ylabel(str(dim_idx)+"th dim")
+        plt.hist(hist_data, bins=100)
         if show:
             plt.show()
 
@@ -158,9 +171,7 @@ class MCMC_Diag:
         plt.figure(figsize=(5*grid_column, 3*grid_row))
         for i in range(self.num_dim):
             plt.subplot(grid_row, grid_column, i+1)
-            dim_samples = self.get_specific_dim_samples(i)
-            plt.ylabel(str(i)+"-th dim")
-            plt.hist(dim_samples, bins=100)
+            self.show_hist_specific_dim(i)
         if show:
             plt.show()
 
@@ -177,20 +188,25 @@ class MCMC_Diag:
                 n_cov_term += y[i]*y[i+k]
             acf.append(n_cov_term / n_var)
         return acf
+    
+    def show_acf_specific_dim(self, dim_idx, maxLag, show=False):
+        grid = [i for i in range(maxLag+1)]
+        acf = self.get_autocorr(dim_idx, maxLag)
+        plt.ylim([-1,1])
+        plt.ylabel(str(dim_idx)+"th dim")
+        plt.bar(grid, acf, width=0.3)
+        plt.axhline(0, color="black", linewidth=0.8)
+        if show:
+            plt.show()
 
     def show_acf(self, maxLag, figure_grid_dim, show=True):
         grid_column= figure_grid_dim[0]
         grid_row = figure_grid_dim[1]
 
-        subplot_grid = [i for i in range(maxLag+1)]
         plt.figure(figsize=(5*grid_column, 3*grid_row))
         for i in range(self.num_dim):
             plt.subplot(grid_row, grid_column, i+1)
-            acf = self.get_autocorr(i, maxLag)
-            plt.ylabel(str(i)+"-th dim")
-            plt.ylim([-1,1])
-            plt.bar(subplot_grid, acf, width=0.3)
-            plt.axhline(0, color="black", linewidth=0.8)
+            self.show_acf_specific_dim(i, maxLag)
         if show:
             plt.show()
     

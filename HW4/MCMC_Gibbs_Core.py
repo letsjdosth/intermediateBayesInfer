@@ -12,7 +12,14 @@ class MCMC_Gibbs:
 
         self.MC_sample.append(new)
 
-        
+    
+    def full_conditional_sampler(self, last_param):
+        new_sample = [x for x in last_param]
+        #update new
+
+        return new_sample
+
+
     def generate_samples(self, num_samples, pid=None, verbose=True):
         start_time = time.time()
         for i in range(1, num_samples):
