@@ -1,8 +1,10 @@
 from math import log, sqrt, exp
-from random import gammavariate, normalvariate
+from random import gammavariate, normalvariate, seed
 from functools import partial
 
 from MCMC_MH_Core import MCMC_MH, MCMC_Diag
+
+seed(20220305)
 
 # For Z
 def inv_gaussian_log_density_kernel(eval_pt, param_vec):
@@ -44,6 +46,7 @@ inst_p1a_diag.show_acf(20, (1,1))
 print("mean of z:", inst_p1a_diag.get_sample_mean()) #true: 1.1547
 print("var of z:", inst_p1a_diag.get_sample_var())
 print("0.95 cred.int. of z: ", inst_p1a_diag.get_sample_quantile([0.025, 0.975]))
+print("ESS:", inst_p1a_diag.effective_sample_size(0))
 
 #invert to 1/Z
 inst_p1a_diag_inverted = MCMC_Diag()
@@ -52,6 +55,7 @@ inst_p1a_diag_inverted.set_mc_samples_from_list(inverted_MC_sample)
 print("mean of 1/z: ", inst_p1a_diag_inverted.get_sample_mean()) #true: 1.1160
 print("var of 1/z: ", inst_p1a_diag_inverted.get_sample_var())
 print("0.95 cred.int. of 1/z: ", inst_p1a_diag_inverted.get_sample_quantile([0.025, 0.975]))
+
 
 
 #for W
@@ -91,6 +95,7 @@ inst_p1b_diag.show_acf(20, (1,1))
 print("mean of w:", inst_p1b_diag.get_sample_mean())
 print("var of w:", inst_p1b_diag.get_sample_var())
 print("0.95 cred.int. of w: ", inst_p1b_diag.get_sample_quantile([0.025, 0.975]))
+print("ESS:", inst_p1b_diag.effective_sample_size(0))
 
 #invert to Z
 inst_p1b_diag_z = MCMC_Diag()

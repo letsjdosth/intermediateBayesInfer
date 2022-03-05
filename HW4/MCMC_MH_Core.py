@@ -44,7 +44,7 @@ class MCMC_MH:
             self.MC_sample.append(last)
             self.num_total_iters += 1
 
-    def generate_samples(self, num_samples, pid=None, verbose=True):
+    def generate_samples(self, num_samples, pid=None, verbose=True, print_iter_cycle=500):
         start_time = time.time()
         for i in range(num_samples):
             self.sampler()
@@ -54,9 +54,9 @@ class MCMC_MH:
                 estimated_time = (num_samples/100)*elap_time_head_iter
                 print("estimated running time: ", estimated_time//60, "min ", estimated_time%60, "sec")
 
-            if i%500 == 0 and verbose and pid is not None:
+            if i%print_iter_cycle == 0 and verbose and pid is not None:
                 print("pid:",pid," iteration", i, "/", num_samples)
-            elif i%500 == 0 and verbose and pid is None:
+            elif i%print_iter_cycle == 0 and verbose and pid is None:
                 print("iteration", i, "/", num_samples)
         elap_time = time.time()-start_time
         
