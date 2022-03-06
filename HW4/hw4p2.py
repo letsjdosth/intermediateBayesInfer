@@ -172,7 +172,7 @@ newton_gradient = partial(joint_log_density_kernel_neg_gradient, data_num=len(my
 newton_hessian = partial(joint_log_density_kernel_neg_hessian, data_num=len(mydata), data_log_sum=data_log_sum, data_sum=data_sum)
 newton_inst = NewtonUnconstrained(newton_objective, newton_gradient, newton_hessian)
 
-newton_inst.run_newton_with_backtracking_line_search(np.array([1, 0.1]), method="cholesky")
+newton_inst.run_newton_with_backtracking_line_search(np.array([2, 0.5]), method="cholesky")
 mode = newton_inst.get_arg_min()
 print("laplace approximation - mode:", mode)
 laplace_approx_cov = np.linalg.inv(newton_hessian(mode))

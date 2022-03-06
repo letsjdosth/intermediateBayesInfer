@@ -62,10 +62,10 @@ class MCMC_MH:
         
         if pid is not None and verbose:
             print("pid:",pid, "iteration", num_samples, "/", num_samples, " done! (elapsed time for execution: ", elap_time//60,"min ", elap_time%60,"sec)")
-            print("acceptence rate: ", round(self.num_accept / self.num_total_iters, 4))
+            print("acceptance rate: ", round(self.num_accept / self.num_total_iters, 4))
         elif pid is None and verbose:
             print("iteration", num_samples, "/", num_samples, " done! (elapsed time for execution: ", elap_time//60,"min ", elap_time%60,"sec)")
-            print("acceptence rate: ", round(self.num_accept / self.num_total_iters, 4))
+            print("acceptance rate: ", round(self.num_accept / self.num_total_iters, 4))
 
         
     def write_samples(self, filename: str):
