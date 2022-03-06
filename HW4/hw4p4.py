@@ -123,14 +123,13 @@ gibbs_inst_1.generate_samples(100000)
 
 gibbs_diag_inst_1 = MCMC_Diag()
 gibbs_diag_inst_1.set_mc_sample_from_MCMC_MH(gibbs_inst_1)
-# gibbs_diag_inst_1.burnin(3000)
+gibbs_diag_inst_1.burnin(30000)
 gibbs_diag_inst_1.show_traceplot((3,1))
 gibbs_diag_inst_1.show_hist((3,1))
 # gibbs_diag_inst_1.show_scatterplot(0,1)
 gibbs_diag_inst_1.show_acf(30, (3,1))
-
-
-#1000은 너무한듯 ㅋㅋ
+print("mean: ", gibbs_diag_inst_1.get_sample_mean())
+print("95% CI: ", gibbs_diag_inst_1.get_sample_quantile([0.025, 0.975]))
 
 hyper_param_set2 = [0.01, 0.01, 1000, 1000] #hyper_param: [alpha, beta, gamma, delta]
 gibbs_inst_2 = Gibbs_with_MH_p4([2,2,10], mining_data, hyper_param_set2)
@@ -138,12 +137,13 @@ gibbs_inst_2.generate_samples(100000)
 
 gibbs_diag_inst_2 = MCMC_Diag()
 gibbs_diag_inst_2.set_mc_sample_from_MCMC_MH(gibbs_inst_2)
-# gibbs_diag_inst_2.burnin(3000)
+gibbs_diag_inst_2.burnin(30000)
 gibbs_diag_inst_2.show_traceplot((3,1))
 gibbs_diag_inst_2.show_hist((3,1))
 # gibbs_diag_inst_2.show_scatterplot(0,1)
 gibbs_diag_inst_2.show_acf(30, (3,1))
-
+print("mean: ", gibbs_diag_inst_2.get_sample_mean())
+print("95% CI: ", gibbs_diag_inst_2.get_sample_quantile([0.025, 0.975]))
 
 
 hyper_param_set3 = [1000, 1000, 0.01, 0.01] #hyper_param: [alpha, beta, gamma, delta]
@@ -152,12 +152,13 @@ gibbs_inst_3.generate_samples(100000)
 
 gibbs_diag_inst_3 = MCMC_Diag()
 gibbs_diag_inst_3.set_mc_sample_from_MCMC_MH(gibbs_inst_3)
-# gibbs_diag_inst_3.burnin(3000)
+gibbs_diag_inst_3.burnin(30000)
 gibbs_diag_inst_3.show_traceplot((3,1))
 gibbs_diag_inst_3.show_hist((3,1))
 # gibbs_diag_inst_3.show_scatterplot(0,1)
 gibbs_diag_inst_3.show_acf(30, (3,1))
-
+print("mean: ", gibbs_diag_inst_3.get_sample_mean())
+print("95% CI: ", gibbs_diag_inst_3.get_sample_quantile([0.025, 0.975]))
 
 
 
@@ -167,9 +168,10 @@ gibbs_inst_4.generate_samples(100000)
 
 gibbs_diag_inst_4 = MCMC_Diag()
 gibbs_diag_inst_4.set_mc_sample_from_MCMC_MH(gibbs_inst_4)
-# gibbs_diag_inst_4.burnin(3000)
+gibbs_diag_inst_4.burnin(30000)
 gibbs_diag_inst_4.show_traceplot((3,1))
 gibbs_diag_inst_4.show_hist((3,1))
 # gibbs_diag_inst_4.show_scatterplot(0,1)
 gibbs_diag_inst_4.show_acf(30, (3,1))
-
+print("mean: ", gibbs_diag_inst_4.get_sample_mean())
+print("95% CI: ", gibbs_diag_inst_4.get_sample_quantile([0.025, 0.975]))
