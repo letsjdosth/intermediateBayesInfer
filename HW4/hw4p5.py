@@ -232,7 +232,8 @@ class Gibb_p5(MCMC_Gibbs):
 
 
 gibbs_p5_inst1 = Gibb_p5(data_inst)
-gibbs_p5_inst1.set_hyperparameter(1, 0.1, 1, 0.1, 1, 0.1, 1, 1)
+# gibbs_p5_inst1.set_hyperparameter(1, 0.1, 1, 0.1, 1, 0.1, 1, 1)
+gibbs_p5_inst1.set_hyperparameter(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
 gibbs_p5_inst1.set_initial_parameter(0, 0, 1, 1, 1, [0 for _ in range(data_inst.get_num_patient())], [0 for _ in range(data_inst.get_num_patient())])
 gibbs_p5_inst1.generate_samples(30000)
 # gibbs_p5_inst1.write_samples("HW4/hw4p5_samples")
