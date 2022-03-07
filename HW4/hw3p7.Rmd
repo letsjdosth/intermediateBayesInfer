@@ -1,0 +1,96 @@
+---
+title: "Stat206b hw3 problem7"
+author: "Seokjun Choi"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+7. Consider a model of the form $x | \theta \sim Bin(n, \theta)$ and $\theta \sim Be(1/2, 1/2)$. 
+Assume that you observe $n = 10$ and $x = 1$. 
+(a) Report an exact 95% (symmetric) posterior credible interval for $\theta$ (for example, you can use the qbeta function in R). 
+(b) Report an approximate credible interval for $\theta$ using the Laplace approximation. 
+(c) Report an approximate credible interval for $\theta$ using Monte Carlo simulation. 
+(d) Repeat the previous calculations with $n = 100$, $x = 10$ and with $n = 1000$, $x = 100$. Comment on the difference between all 9 situations. 
+
+For (a), (b), and (c), please see my note.
+
+For (d), I make three R functions.
+
+```{r}
+exact_95_posterior_ci <- function(obs_n, obs_x){
+    lower <- qbeta(0.025, 0.5 + obs_x, 0.5 + (obs_n - obs_x))
+    upper <- qbeta(0.975, 0.5 + obs_x, 0.5 + (obs_n - obs_x))
+    return(c(lower, upper))
+}
+
+mc_95_posterior_ci <- function(obs_n, obs_x, num_sim){
+    mc_samples <- rbeta(num_sim, 0.5 + obs_x, 0.5 + (obs_n - obs_x))
+    hist(mc_samples, breaks=30, main="MC_samples", freq=FALSE, xlim=c(0,1))
+    curve(dbeta(x, 0.5 + obs_x, 0.5 + (obs_n - obs_x)),
+        col="blue", add=TRUE)
+    return(quantile(mc_samples, probs=c(0.025, 0.975)))
+}
+
+laplace_93_posterior_ci <- function(obs_n, obs_x){
+    mean = (obs_x - 0.5)/(obs_n - 1)
+    precision = (1/(obs_x - 0.5) + 1/(obs_n - obs_x - 0.5)) * (obs_n - 1)^2
+    lower <- qnorm(0.025, mean, sqrt(1/precision))
+    upper <- qnorm(0.975, mean, sqrt(1/precision))
+
+    curve(dbeta(x, 0.5 + obs_x, 0.5 + (obs_n - obs_x)),
+        xlim=c(0, 1), main="Laplace approximation",
+        ylab="density", xlab="", col="blue")
+    curve(dnorm(x, mean, sqrt(1/precision)), add=TRUE, col="red")
+    legend("topright", col=c("blue","red"), legend=c("true", "laplace"), lty=c(1,1))
+    return(c(lower, upper))
+}
+
+set.seed(20220306)
+```
+
+Using these functions, let's observe three results for each case.
+
+\newpage
+## case 1: n=10, x=1
+```{r}
+exact_95_posterior_ci(10, 1)
+laplace_93_posterior_ci(10, 1)
+mc_95_posterior_ci(10, 1, 100000)
+```
+
+Monte carlo samples give us a close CI to the true CI, but it paid computing power for 100000 iteration as a cost.
+But it's 2022: it was not too much.
+
+As I noted at my note, the laplace approximation gives us unsatisfactory result.
+It is a drawback of the laplace approximation for a desity having restricted domain, like $[0,1]$ here.
+I think it's better to avoid approximations where it's obvious that they won't converge to true.
+(unless we want only local information, for example, near mode in the case of a Laplace approximation.)
+
+\newpage
+## case 2: n=100, x=10
+```{r}
+exact_95_posterior_ci(100, 10)
+laplace_93_posterior_ci(100, 10)
+mc_95_posterior_ci(100, 10, 100000)
+```
+
+The true credible interval get shorter than case 1, as $n$ grows.
+Monte carlo samples still offer a good approximated CI.
+
+Since the true beta posterior distribution's density gets closer to the reversed-bell-shape, 
+the result of laplace approximation gets better.
+
+\newpage
+## case 3: n=1000, x=100
+```{r}
+exact_95_posterior_ci(1000, 100)
+laplace_93_posterior_ci(1000, 100)
+mc_95_posterior_ci(1000, 100, 100000)
+```
+
+
+Again, the true credible interval get much shorter.
+Monte carlo samples provide a good approximated CI in this case, too.
+Since the change of the true beta posterior density, the result of laplace approximation seems good now.
