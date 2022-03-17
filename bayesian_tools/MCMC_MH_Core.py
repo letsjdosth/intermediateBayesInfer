@@ -81,13 +81,24 @@ class MCMC_Diag:
     def __init__(self):
         self.MC_sample = []
         self.num_dim = None
+        
+        # variable-name manager
         self.variable_names = None
+
+        # graphical parameters
+        self.graphic_traceplot_mean = False #not yet
+        self.graphic_hist_mean = True
+        self.graphic_hist_median = True
+        self.graphic_hist_95CI = True
+        self.graphic_use_variable_name=False
+
     
     def set_mc_samples_from_list(self, mc_sample, variable_names=None):
         self.MC_sample = mc_sample
         self.num_dim = len(mc_sample[0])
         if variable_names is not None:
             self.set_variable_names(variable_names)
+
 
     def set_mc_sample_from_MCMC_MH(self, inst_MCMC_MH, variable_names=None):
         self.MC_sample = inst_MCMC_MH.MC_sample
@@ -107,6 +118,7 @@ class MCMC_Diag:
 
     def set_variable_names(self, name_list):
         self.variable_names = name_list
+        self.graphic_use_variable_name=True
 
     def write_samples(self, filename: str):
         with open(filename + '.csv', 'w', newline='', encoding='utf-8') as f:
@@ -160,7 +172,7 @@ class MCMC_Diag:
             quantile_vec = [self._round_list(x, round) for x in quantile_vec]
         return quantile_vec
 
-    def print_summaries(self, round = None, name=False):
+    def print_summaries(self, round = None):
         #name/mean/var/95%CI
         mean_vec = self.get_sample_mean(round=round)
         var_vec = self.get_sample_var(round=round)
@@ -168,7 +180,7 @@ class MCMC_Diag:
 
 
         print("param \t mean \t var \t 95%CI")
-        if name:
+        if self.graphic_use_variable_name:
             for var_name, mean_val, var_val, cred95_vals in zip(self.variable_names, mean_vec, var_vec, cred95_interval_vec):
                 print(var_name, "\t", mean_val, "\t", var_val, "\t", cred95_vals)
         else:
@@ -177,9 +189,9 @@ class MCMC_Diag:
 
 
 
-    def show_traceplot_specific_dim(self, dim_idx, show=False, name=False):
+    def show_traceplot_specific_dim(self, dim_idx, show=False):
         traceplot_data = self.get_specific_dim_samples(dim_idx)
-        if name:
+        if self.graphic_use_variable_name:
             plt.ylabel(self.variable_names[dim_idx])
         else:
             plt.ylabel(str(dim_idx)+"th dim")
@@ -187,37 +199,51 @@ class MCMC_Diag:
         if show:
             plt.show()
 
-    def show_traceplot(self, figure_grid_dim, show=True, name=False):
+    def show_traceplot(self, figure_grid_dim, show=True):
         grid_column= figure_grid_dim[0]
         grid_row = figure_grid_dim[1]
 
         plt.figure(figsize=(5*grid_column, 3*grid_row))
         for i in range(self.num_dim):
             plt.subplot(grid_row, grid_column, i+1)
-            self.show_traceplot_specific_dim(i, name = name)
+            self.show_traceplot_specific_dim(i)
         if show:
             plt.show()
 
     
-    def show_hist_specific_dim(self, dim_idx, show=False, name=False):
+    def show_hist_specific_dim(self, dim_idx, show=False):
         hist_data = self.get_specific_dim_samples(dim_idx)
-        if name:
+        if self.graphic_use_variable_name:
             plt.ylabel(self.variable_names[dim_idx])
         else:
             plt.ylabel(str(dim_idx)+"th dim")
 
         plt.hist(hist_data, bins=100)
+        
+        if self.graphic_hist_mean:
+            plt.axvline(np.mean(hist_data), color="red", linestyle="solid", linewidth=0.8)
+        
+        if self.graphic_hist_median:
+            plt.axvline(np.median(hist_data), color="red", linestyle="dashed", linewidth=0.8)
+
+        if self.graphic_hist_95CI:
+            quantile_0_95 = self.get_sample_quantile([0.025, 0.975])[dim_idx]
+            print(dim_idx, quantile_0_95)
+            x_axis_pts = np.linspace(quantile_0_95[0], quantile_0_95[1], num=100)
+            y_axis_pts = np.zeros(len(x_axis_pts)) + 0.1
+            plt.scatter(x_axis_pts, y_axis_pts, color="red", s=10, zorder=2)
+
         if show:
             plt.show()
 
-    def show_hist(self, figure_grid_dim, show=True, name=False):
+    def show_hist(self, figure_grid_dim, show=True):
         grid_column= figure_grid_dim[0]
         grid_row = figure_grid_dim[1]
        
         plt.figure(figsize=(5*grid_column, 3*grid_row))
         for i in range(self.num_dim):
             plt.subplot(grid_row, grid_column, i+1)
-            self.show_hist_specific_dim(i, name = name)
+            self.show_hist_specific_dim(i)
         if show:
             plt.show()
 
@@ -235,12 +261,12 @@ class MCMC_Diag:
             acf.append(n_cov_term / n_var)
         return acf
     
-    def show_acf_specific_dim(self, dim_idx, maxLag, show=False, name=False):
+    def show_acf_specific_dim(self, dim_idx, maxLag, show=False):
         grid = [i for i in range(maxLag+1)]
         acf = self.get_autocorr(dim_idx, maxLag)
         plt.ylim([-1,1])
         
-        if name:
+        if self.graphic_use_variable_name:
             plt.ylabel(self.variable_names[dim_idx])
         else:
             plt.ylabel(str(dim_idx)+"th dim")
@@ -250,22 +276,22 @@ class MCMC_Diag:
         if show:
             plt.show()
 
-    def show_acf(self, maxLag, figure_grid_dim, show=True, name=False):
+    def show_acf(self, maxLag, figure_grid_dim, show=True):
         grid_column= figure_grid_dim[0]
         grid_row = figure_grid_dim[1]
 
         plt.figure(figsize=(5*grid_column, 3*grid_row))
         for i in range(self.num_dim):
             plt.subplot(grid_row, grid_column, i+1)
-            self.show_acf_specific_dim(i, maxLag, name = name)
+            self.show_acf_specific_dim(i, maxLag)
         if show:
             plt.show()
     
-    def show_scatterplot(self, dim_idx_horizontal, dim_idx_vertical, show=True, name=False):
+    def show_scatterplot(self, dim_idx_horizontal, dim_idx_vertical, show=True):
         x = self.get_specific_dim_samples(dim_idx_horizontal)
         y = self.get_specific_dim_samples(dim_idx_vertical)
         plt.scatter(x, y)
-        if name:
+        if self.graphic_use_variable_name:
             plt.xlabel(self.variable_names[dim_idx_horizontal])
             plt.ylabel(self.variable_names[dim_idx_vertical])
         else:
@@ -284,7 +310,7 @@ class MCMC_Diag:
         # Caution: need to test. this function is not tested
 
         pt_est = None
-        if pt_estimate_method is "mean":
+        if pt_estimate_method == "mean":
             pt_est = self.get_sample_mean()
         else:
             raise ValueError("only mean pt_estimate_method is implemented now :D")
