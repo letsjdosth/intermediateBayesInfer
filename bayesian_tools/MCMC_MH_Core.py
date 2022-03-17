@@ -86,12 +86,17 @@ class MCMC_Diag:
         self.variable_names = None
 
         # graphical parameters
-        self.graphic_traceplot_mean = False #not yet
+        self.graphic_traceplot_mean = False
+        self.graphic_traceplot_median = False
         self.graphic_hist_mean = True
         self.graphic_hist_median = True
         self.graphic_hist_95CI = True
-        self.graphic_use_variable_name=False
+        self.graphic_scatterplot_mean = False
+        self.graphic_scatterplot_median = False
 
+        self.graphic_use_variable_name=False
+        #note: self.set_variable_names function can switch this flag
+        #note: print function depends on this flag
     
     def set_mc_samples_from_list(self, mc_sample, variable_names=None):
         self.MC_sample = mc_sample
@@ -191,34 +196,42 @@ class MCMC_Diag:
 
     def show_traceplot_specific_dim(self, dim_idx, show=False):
         traceplot_data = self.get_specific_dim_samples(dim_idx)
+        plt.plot(range(len(traceplot_data)), traceplot_data)
         if self.graphic_use_variable_name:
             plt.ylabel(self.variable_names[dim_idx])
         else:
             plt.ylabel(str(dim_idx)+"th dim")
-        plt.plot(range(len(traceplot_data)), traceplot_data)
+
+        if self.graphic_traceplot_mean:
+            plt.axhline(np.mean(traceplot_data), color="red", linestyle="solid", linewidth=0.8)
+        if self.graphic_traceplot_median:
+            plt.axhline(np.median(traceplot_data), color="red", linestyle="dashed", linewidth=0.8)
+
         if show:
             plt.show()
 
-    def show_traceplot(self, figure_grid_dim, show=True):
-        grid_column= figure_grid_dim[0]
-        grid_row = figure_grid_dim[1]
+    def show_traceplot(self, figure_grid_dim, choose_dims=None, show=True):
+        grid_row = figure_grid_dim[0]
+        grid_column= figure_grid_dim[1]
+        if choose_dims is None:
+            choose_dims = range(self.num_dim)
 
         plt.figure(figsize=(5*grid_column, 3*grid_row))
-        for i in range(self.num_dim):
+        for i, dim_idx in enumerate(choose_dims):
             plt.subplot(grid_row, grid_column, i+1)
-            self.show_traceplot_specific_dim(i)
+            self.show_traceplot_specific_dim(dim_idx)
         if show:
             plt.show()
 
     
     def show_hist_specific_dim(self, dim_idx, show=False):
         hist_data = self.get_specific_dim_samples(dim_idx)
+        
+        plt.hist(hist_data, bins=100)
         if self.graphic_use_variable_name:
             plt.ylabel(self.variable_names[dim_idx])
         else:
             plt.ylabel(str(dim_idx)+"th dim")
-
-        plt.hist(hist_data, bins=100)
         
         if self.graphic_hist_mean:
             plt.axvline(np.mean(hist_data), color="red", linestyle="solid", linewidth=0.8)
@@ -236,14 +249,16 @@ class MCMC_Diag:
         if show:
             plt.show()
 
-    def show_hist(self, figure_grid_dim, show=True):
-        grid_column= figure_grid_dim[0]
-        grid_row = figure_grid_dim[1]
+    def show_hist(self, figure_grid_dim, choose_dims=None, show=True):
+        grid_row = figure_grid_dim[0]
+        grid_column= figure_grid_dim[1]
+        if choose_dims is None:
+            choose_dims = range(self.num_dim)
        
         plt.figure(figsize=(5*grid_column, 3*grid_row))
-        for i in range(self.num_dim):
+        for i, dim_idx in enumerate(choose_dims):
             plt.subplot(grid_row, grid_column, i+1)
-            self.show_hist_specific_dim(i)
+            self.show_hist_specific_dim(dim_idx)
         if show:
             plt.show()
 
@@ -265,25 +280,29 @@ class MCMC_Diag:
         grid = [i for i in range(maxLag+1)]
         acf = self.get_autocorr(dim_idx, maxLag)
         plt.ylim([-1,1])
-        
+       
+        plt.bar(grid, acf, width=0.3)
+        plt.axhline(0, color="black", linewidth=0.8)
+
         if self.graphic_use_variable_name:
             plt.ylabel(self.variable_names[dim_idx])
         else:
             plt.ylabel(str(dim_idx)+"th dim")
 
-        plt.bar(grid, acf, width=0.3)
-        plt.axhline(0, color="black", linewidth=0.8)
         if show:
             plt.show()
 
-    def show_acf(self, maxLag, figure_grid_dim, show=True):
-        grid_column= figure_grid_dim[0]
-        grid_row = figure_grid_dim[1]
-
+    def show_acf(self, maxLag, figure_grid_dim, choose_dims=None, show=True):
+        grid_row = figure_grid_dim[0]
+        grid_column= figure_grid_dim[1]
+        if choose_dims is None:
+            choose_dims = range(self.num_dim)
+        
         plt.figure(figsize=(5*grid_column, 3*grid_row))
-        for i in range(self.num_dim):
+        for i, dim_idx in enumerate(choose_dims):
             plt.subplot(grid_row, grid_column, i+1)
-            self.show_acf_specific_dim(i, maxLag)
+            self.show_acf_specific_dim(dim_idx, maxLag)
+        
         if show:
             plt.show()
     
@@ -297,6 +316,15 @@ class MCMC_Diag:
         else:
             plt.xlabel(str(dim_idx_horizontal)+"th dim")
             plt.ylabel(str(dim_idx_vertical)+"th dim")
+        
+        if self.graphic_scatterplot_mean:
+            plt.axvline(np.mean(x), color="red", linestyle="solid", linewidth=0.8)
+            plt.axhline(np.mean(y), color="red", linestyle="solid", linewidth=0.8)
+                
+        if self.graphic_scatterplot_median:
+            plt.axvline(np.median(x), color="red", linestyle="dashed", linewidth=0.8)
+            plt.axhline(np.median(y), color="red", linestyle="dashed", linewidth=0.8)
+        
         if show:
             plt.show()
     
@@ -322,10 +350,6 @@ class MCMC_Diag:
         expected_deviance = mean(deviances_at_all_samples)
         return expected_deviance * 2 - deviance_at_pt_est
 
-
-
-# histogram with mean/median/user_setted/95%CI
-# traceplot with mean/median/user_setted
 
 
 if __name__ == "__main__":
