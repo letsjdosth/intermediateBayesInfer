@@ -1,3 +1,6 @@
+#test-specific
+for_test.py
+
 # pdf
 *.pdf
 
