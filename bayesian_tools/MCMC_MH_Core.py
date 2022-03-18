@@ -184,13 +184,13 @@ class MCMC_Diag:
         cred95_interval_vec = self.get_sample_quantile([0.025, 0.975], round=round)
 
 
-        print("param \t mean \t var \t 95%CI")
+        print("param \t\t mean \t var \t 95%CI")
         if self.graphic_use_variable_name:
             for var_name, mean_val, var_val, cred95_vals in zip(self.variable_names, mean_vec, var_vec, cred95_interval_vec):
-                print(var_name, "\t", mean_val, "\t", var_val, "\t", cred95_vals)
+                print(var_name, "\t\t", mean_val, "\t", var_val, "\t", cred95_vals)
         else:
             for i, (mean_val, var_val, cred95_vals) in enumerate(zip(mean_vec, var_vec, cred95_interval_vec)):
-                print(i,"th", "\t", mean_val, "\t", var_val, "\t", cred95_vals)
+                print(i,"th", "\t\t", mean_val, "\t", var_val, "\t", cred95_vals)
 
 
 

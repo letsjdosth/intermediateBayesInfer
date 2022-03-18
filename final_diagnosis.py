@@ -8,32 +8,32 @@ gibbs_p5_diag_inst1_part1.set_mc_sample_from_csv("part1")
 gibbs_p5_diag_inst1_part1.burnin(10000)
 gibbs_p5_diag_inst1_part1.thinning(30)
 gibbs_p5_diag_inst1_part1.set_variable_names(["beta_1", "beta_2", "sigma2", "beta_0_bar", "tau2"])
-# gibbs_p5_diag_inst1_part1.show_traceplot((2,3))
-# gibbs_p5_diag_inst1_part1.show_hist((2,3))
-# gibbs_p5_diag_inst1_part1.show_acf(40, (2,3))
-# gibbs_p5_diag_inst1_part1.print_summaries(round=5)
-# print("ESS - beta1", gibbs_p5_diag_inst1_part1.effective_sample_size(0)) #beta1
-# print("ESS - beta2", gibbs_p5_diag_inst1_part1.effective_sample_size(1)) #beta2
-# print("ESS - sigma2", gibbs_p5_diag_inst1_part1.effective_sample_size(2)) #sigma2
-# print("ESS - beta_0_bar", gibbs_p5_diag_inst1_part1.effective_sample_size(3)) #beta_0_bar
-# print("ESS - tau2", gibbs_p5_diag_inst1_part1.effective_sample_size(4)) #tau2
+gibbs_p5_diag_inst1_part1.show_traceplot((2,3))
+gibbs_p5_diag_inst1_part1.show_hist((2,3))
+gibbs_p5_diag_inst1_part1.show_acf(40, (2,3))
+gibbs_p5_diag_inst1_part1.print_summaries(round=5)
+print("ESS - beta1", gibbs_p5_diag_inst1_part1.effective_sample_size(0)) #beta1
+print("ESS - beta2", gibbs_p5_diag_inst1_part1.effective_sample_size(1)) #beta2
+print("ESS - sigma2", gibbs_p5_diag_inst1_part1.effective_sample_size(2)) #sigma2
+print("ESS - beta_0_bar", gibbs_p5_diag_inst1_part1.effective_sample_size(3)) #beta_0_bar
+print("ESS - tau2", gibbs_p5_diag_inst1_part1.effective_sample_size(4)) #tau2
 
 
 gibbs_p5_diag_inst1_part2 = MCMC_Diag()
 gibbs_p5_diag_inst1_part2.set_mc_sample_from_csv("part2")
 gibbs_p5_diag_inst1_part2.burnin(10000)
-gibbs_p5_diag_inst1_part2.thinning(40)
-# gibbs_p5_diag_inst1_part2.set_variable_names(["beta_0"+str(i) for i in range(1,31)])
-# gibbs_p5_diag_inst1_part2.show_traceplot((2,3), choose_dims=[0,1,2,3,4,5])
-# gibbs_p5_diag_inst1_part2.show_hist((2,3), choose_dims=[0,1,2,3,4,5])
-# gibbs_p5_diag_inst1_part2.show_acf(30, (2,3), choose_dims=[0,1,2,3,4,5])
-# gibbs_p5_diag_inst1_part2.print_summaries(round=5)
-# print("ESS - beta_01", gibbs_p5_diag_inst1_part2.effective_sample_size(0))
-# print("ESS - beta_02", gibbs_p5_diag_inst1_part2.effective_sample_size(1))
-# print("ESS - beta_03", gibbs_p5_diag_inst1_part2.effective_sample_size(2))
-# print("ESS - beta_04", gibbs_p5_diag_inst1_part2.effective_sample_size(3))
-# print("ESS - beta_05", gibbs_p5_diag_inst1_part2.effective_sample_size(4)) 
-# print("ESS - beta_06", gibbs_p5_diag_inst1_part2.effective_sample_size(5)) 
+gibbs_p5_diag_inst1_part2.thinning(30)
+gibbs_p5_diag_inst1_part2.set_variable_names(["beta_0"+str(i) for i in range(1,31)])
+gibbs_p5_diag_inst1_part2.show_traceplot((2,3), choose_dims=[0,1,2,3,4,5])
+gibbs_p5_diag_inst1_part2.show_hist((2,3), choose_dims=[0,1,2,3,4,5])
+gibbs_p5_diag_inst1_part2.show_acf(30, (2,3), choose_dims=[0,1,2,3,4,5])
+gibbs_p5_diag_inst1_part2.print_summaries(round=5)
+print("ESS - beta_01", gibbs_p5_diag_inst1_part2.effective_sample_size(0))
+print("ESS - beta_02", gibbs_p5_diag_inst1_part2.effective_sample_size(1))
+print("ESS - beta_03", gibbs_p5_diag_inst1_part2.effective_sample_size(2))
+print("ESS - beta_04", gibbs_p5_diag_inst1_part2.effective_sample_size(3))
+print("ESS - beta_05", gibbs_p5_diag_inst1_part2.effective_sample_size(4)) 
+print("ESS - beta_06", gibbs_p5_diag_inst1_part2.effective_sample_size(5)) 
 
 
 
