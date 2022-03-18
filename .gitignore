@@ -1,5 +1,7 @@
 #test-specific
 for_test.py
+part1.csv
+part2.csv
 
 # pdf
 *.pdf

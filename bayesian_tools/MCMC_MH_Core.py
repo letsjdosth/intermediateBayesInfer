@@ -116,7 +116,7 @@ class MCMC_Diag:
             reader = csv.reader(csvfile)
             for csv_row in reader:
                 csv_row = [float(elem) for elem in csv_row]
-                self.MC_sample(csv_row)
+                self.MC_sample.append(csv_row)
         self.num_dim = len(self.MC_sample[0])
         if variable_names is not None:
             self.set_variable_names(variable_names)
@@ -241,7 +241,6 @@ class MCMC_Diag:
 
         if self.graphic_hist_95CI:
             quantile_0_95 = self.get_sample_quantile([0.025, 0.975])[dim_idx]
-            print(dim_idx, quantile_0_95)
             x_axis_pts = np.linspace(quantile_0_95[0], quantile_0_95[1], num=100)
             y_axis_pts = np.zeros(len(x_axis_pts)) + 0.1
             plt.scatter(x_axis_pts, y_axis_pts, color="red", s=10, zorder=2)
